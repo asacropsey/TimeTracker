@@ -5,17 +5,29 @@ with milestones and planned hours. Built to work on the phone (also offline) and
 
 The full plan is in [SPEC.md](SPEC.md).
 
-## Current status: Phase 1 – works on this computer only
+**The app:** https://asacropsey.github.io/TimeTracker/
+
+## Install on the phone (Android, once)
+1. Open **Chrome** on the phone and go to https://asacropsey.github.io/TimeTracker/
+2. Tap the **⋮** menu (top right) → **Add to home screen** → **Install**.
+3. Open **Time Tracker** from the home screen (the crest icon). It now also works offline.
+
+New versions install themselves: the next time the app is opened with internet, it updates.
+
+## Current status: Phase 2 – online, but each device keeps its own data
 
 - ✅ Projects and milestones (create, rename, archive, planned hours, mark done, reorder)
 - ✅ Logging time by hand (start & end time, or just a duration)
 - ✅ History with filters, and "Correct this entry"
 - ✅ Works offline
 - ✅ Visual design from the crest (Phase 1b)
-- ⏳ Not yet: phone (Phase 2), Microsoft sign-in (3), Excel sync (4), timer (5), charts (6)
+- ✅ Published online, installable on the phone (Phase 2)
+- ⏳ Not yet: Microsoft sign-in (3), Excel sync (4), timer (5), charts (6)
 
-**Your data is currently stored only in the browser on this computer.** It is not yet copied to
-Excel or OneDrive. Treat Phase 1 as a test: don't log important time yet.
+**Your data is currently stored only on each device (phone and computer separately).** It is not
+yet copied to Excel or OneDrive. Treat this as a test: don't log important time yet.
+
+Every upload to GitHub runs the automated checks first; the app is only published if they all pass.
 
 ---
 
