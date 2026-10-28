@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { AUTHORITY, SCOPES } from '../src/config';
-import { describeGraphError } from '../src/graph';
+import { describeGraphError, GraphError } from '../src/graph';
 
 describe('sign-in settings', () => {
   it('only allow personal Microsoft accounts', () => {
@@ -23,5 +23,13 @@ describe('error messages from Microsoft', () => {
     expect(describeGraphError(423)).toContain('open in Excel');
     expect(describeGraphError(503)).toContain('try again');
     expect(describeGraphError(418)).toContain('code 418');
+  });
+
+  it('say which step failed and include Microsoft’s own explanation', async () => {
+    const response = new Response(JSON.stringify({ error: { code: 'invalidRequest', message: 'Bad header' } }), { status: 400 });
+    const err = await GraphError.from(response, 'downloading the Excel file');
+    expect(err.message).toBe(
+      'Problem while downloading the Excel file: Unexpected answer from Microsoft (code 400). [invalidRequest: Bad header]',
+    );
   });
 });

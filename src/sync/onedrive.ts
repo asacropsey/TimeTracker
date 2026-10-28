@@ -1,7 +1,7 @@
 // The real Excel file in OneDrive: OneDrive/Apps/Time Tracker/timetracker.xlsx
 // (the app may only access its own folder – Files.ReadWrite.AppFolder).
 
-import { GraphError, graphFetch, OfflineError } from '../graph';
+import { GraphError, graphFetch } from '../graph';
 import { FileChangedError, FileLockedError, type FileStore } from './engine';
 
 const APP_FOLDER = '/me/drive/special/approot';
@@ -14,17 +14,26 @@ export class OneDriveFile implements FileStore {
   async download() {
     const info = await graphFetch(FILE);
     if (info.status === 404) return null; // no file yet: the first sync creates it
-    if (!info.ok) throw new GraphError(info.status);
-    const meta = (await info.json()) as { eTag: string; '@microsoft.graph.downloadUrl': string };
-    // The download link is pre-authorised by Microsoft, so it is fetched without the sign-in pass.
-    let content: Response;
-    try {
-      content = await fetch(meta['@microsoft.graph.downloadUrl'], { cache: 'no-store' });
-    } catch {
-      throw new OfflineError();
+    if (!info.ok) throw await GraphError.from(info, 'looking up the Excel file');
+    const meta = (await info.json()) as { eTag: string; '@microsoft.graph.downloadUrl'?: string };
+    return { bytes: await this.downloadContent(meta['@microsoft.graph.downloadUrl']), etag: meta.eTag };
+  }
+
+  private async downloadContent(downloadUrl?: string): Promise<Uint8Array> {
+    // 1st choice: Microsoft's ready-made download link (needs no sign-in pass; it is new every
+    // time, so it can never return an old copy).
+    if (downloadUrl) {
+      try {
+        const content = await fetch(downloadUrl);
+        if (content.ok) return new Uint8Array(await content.arrayBuffer());
+      } catch {
+        // fall through to the 2nd route
+      }
     }
-    if (!content.ok) throw new GraphError(content.status);
-    return { bytes: new Uint8Array(await content.arrayBuffer()), etag: meta.eTag };
+    // 2nd route: ask Graph for the file content directly.
+    const content = await graphFetch(`${FILE}:/content`, { cache: 'default' });
+    if (!content.ok) throw await GraphError.from(content, 'downloading the Excel file');
+    return new Uint8Array(await content.arrayBuffer());
   }
 
   async upload(bytes: Uint8Array, etag: string | null) {
@@ -36,7 +45,7 @@ export class OneDriveFile implements FileStore {
     const response = await graphFetch(url, { method: 'PUT', headers, body: bytes as BodyInit });
     if (response.status === 412 || response.status === 409) throw new FileChangedError();
     if (response.status === 423) throw new FileLockedError();
-    if (!response.ok) throw new GraphError(response.status);
+    if (!response.ok) throw await GraphError.from(response, 'uploading the Excel file');
   }
 
   async saveBackup(name: string, bytes: Uint8Array) {
@@ -46,30 +55,35 @@ export class OneDriveFile implements FileStore {
       headers: { 'Content-Type': XLSX_TYPE },
       body: bytes as BodyInit,
     });
-    if (!response.ok) throw new GraphError(response.status);
+    if (!response.ok) throw await GraphError.from(response, 'saving a backup copy');
   }
 
   async listBackups() {
-    const response = await graphFetch(`${APP_FOLDER}:/backups:/children?$select=id,name&$top=200`);
+    const response = await graphFetch(`${APP_FOLDER}:/backups:/children?$select=id,name`);
     if (response.status === 404) return [];
-    if (!response.ok) throw new GraphError(response.status);
+    if (!response.ok) throw await GraphError.from(response, 'listing the backup copies');
     return ((await response.json()) as { value: { id: string; name: string }[] }).value;
   }
 
   /** Only ever used on old copies inside backups/ – never on timetracker.xlsx itself. */
   async deleteBackup(id: string) {
     const response = await graphFetch(`/me/drive/items/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    if (!response.ok && response.status !== 404) throw new GraphError(response.status);
+    if (!response.ok && response.status !== 404) throw await GraphError.from(response, 'removing an old backup copy');
   }
 
   private async ensureBackupsFolder() {
     if (this.backupsFolderReady) return;
-    const response = await graphFetch(`${APP_FOLDER}/children`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'backups', folder: {}, '@microsoft.graph.conflictBehavior': 'fail' }),
-    });
-    if (!response.ok && response.status !== 409) throw new GraphError(response.status); // 409 = exists already
+    const exists = await graphFetch(`${APP_FOLDER}:/backups`);
+    if (exists.status === 404) {
+      const created = await graphFetch(`${APP_FOLDER}/children`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'backups', folder: {}, '@microsoft.graph.conflictBehavior': 'fail' }),
+      });
+      if (!created.ok && created.status !== 409) throw await GraphError.from(created, 'creating the backups folder');
+    } else if (!exists.ok) {
+      throw await GraphError.from(exists, 'looking up the backups folder');
+    }
     this.backupsFolderReady = true;
   }
 }

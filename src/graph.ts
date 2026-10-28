@@ -17,8 +17,28 @@ export function describeGraphError(status: number): string {
 }
 
 export class GraphError extends Error {
-  constructor(public status: number) {
-    super(describeGraphError(status));
+  /**
+   * @param step   what the app was doing, e.g. "downloading the Excel file"
+   * @param detail Microsoft's own short explanation, if it gave one
+   */
+  constructor(public status: number, step = '', detail = '') {
+    super(
+      (step ? `Problem while ${step}: ` : '') +
+        describeGraphError(status) +
+        (detail && status !== 401 && status !== 423 ? ` [${detail}]` : ''),
+    );
+  }
+
+  /** Builds the error from a failed response, including Microsoft's explanation. */
+  static async from(response: Response, step: string): Promise<GraphError> {
+    let detail = '';
+    try {
+      const body = (await response.json()) as { error?: { code?: string; message?: string } };
+      detail = [body.error?.code, body.error?.message].filter(Boolean).join(': ').slice(0, 200);
+    } catch {
+      // no readable explanation
+    }
+    return new GraphError(response.status, step, detail);
   }
 }
 
