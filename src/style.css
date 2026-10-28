@@ -263,6 +263,8 @@ button.link {
 @media (min-width: 720px) {
   .welcome img { max-width: 100%; }
 }
+.welcome img.crest-small { max-width: min(180px, 50%); }
+.center { text-align: center; }
 
 /* ----- Projects and milestones ----- */
 .project-title { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }

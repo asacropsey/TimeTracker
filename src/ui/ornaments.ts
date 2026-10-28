@@ -46,6 +46,16 @@ export function shield(letter = '', className = 'shield-icon'): HTMLElement {
   return h('span', { class: className }, outline, letter ? h('span', { class: 'shield-letter' }, letter) : star('shield-star'));
 }
 
+/** A round seal with a star – stands for the account / signing in. */
+export function seal(className = 'icon'): SVGSVGElement {
+  return svg(
+    '-12 -12 24 24',
+    `seal ${className}`,
+    `<circle r="10.5" fill="none" stroke="currentColor" stroke-width="1.6"/>` +
+      `<g transform="scale(.55)"><polygon points="${STAR_POINTS}" fill="currentColor"/></g>`,
+  );
+}
+
 /** A gold line with a star in the middle, used to separate sections. */
 export function divider(): HTMLElement {
   return h('div', { class: 'divider', role: 'separator' }, star());

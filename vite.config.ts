@@ -3,10 +3,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 const navy = '#0E1726';
 
-export default defineConfig(({ command }) => ({
-  // The published app lives at https://asacropsey.github.io/TimeTracker/ ;
-  // while developing on this computer it stays at http://localhost:5173/
-  base: command === 'build' ? '/TimeTracker/' : '/',
+export default defineConfig(({ command, isPreview }) => ({
+  // The published app lives at https://asacropsey.github.io/TimeTracker/ (and "npm run preview"
+  // at http://localhost:4173/TimeTracker/); while developing it stays at http://localhost:5173/
+  base: command === 'build' || isPreview ? '/TimeTracker/' : '/',
   plugins: [
     // Makes the app installable on the phone and lets it work offline.
     VitePWA({

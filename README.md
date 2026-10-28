@@ -55,7 +55,7 @@ cd C:\Users\asacr\Projects\TimeTracker; npm install
 ### Testing that it works offline
 
 `npm run dev` is the "workshop" version and does not work offline. To try the real, offline-capable
-version, use this instead and open **http://localhost:4173**:
+version, use this instead and open **http://localhost:4173/TimeTracker/**:
 
 ```
 cd C:\Users\asacr\Projects\TimeTracker; npm run preview

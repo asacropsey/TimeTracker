@@ -7,20 +7,23 @@ import '@fontsource/eb-garamond/latin-400.css';
 import '@fontsource/eb-garamond/latin-400-italic.css';
 import '@fontsource/eb-garamond/latin-600.css';
 import './style.css';
+import { initAuth } from './auth';
 import { appendEvents, countPending, getAllEvents, getSetting, requestPersistentStorage, setSetting } from './db';
 import { buildState } from './state';
 import type { AppEvent } from './types';
+import { accountView } from './ui/accountView';
 import { h, type AppContext } from './ui/dom';
 import { historyView } from './ui/historyView';
 import { logView } from './ui/logView';
-import { flame, shield, star } from './ui/ornaments';
+import { flame, seal, shield, star } from './ui/ornaments';
 import { projectsView } from './ui/projectsView';
 
-type Tab = 'log' | 'projects' | 'history';
-const TABS: { id: Tab; label: string; icon: () => Element }[] = [
-  { id: 'log', label: 'Record', icon: () => flame() },
-  { id: 'projects', label: 'Projects', icon: () => shield() },
-  { id: 'history', label: 'History', icon: () => star() },
+type Tab = 'log' | 'projects' | 'history' | 'account';
+const TABS: { id: Tab; label: string; icon: () => Element; view: (ctx: AppContext) => HTMLElement }[] = [
+  { id: 'log', label: 'Record', icon: () => flame(), view: logView },
+  { id: 'projects', label: 'Projects', icon: () => shield(), view: projectsView },
+  { id: 'history', label: 'History', icon: () => star(), view: historyView },
+  { id: 'account', label: 'Account', icon: () => seal(), view: accountView },
 ];
 
 // Which kind of device this is. It is written into every event ("phone" or "computer").
@@ -51,6 +54,7 @@ const ctx: AppContext = {
     if (location.hash !== `#${tab}`) location.hash = tab; // triggers render via 'hashchange'
     else render();
   },
+  rerender: () => render(),
 };
 
 function currentTab(): Tab {
@@ -66,7 +70,7 @@ function syncStatus(): string {
 
 function render() {
   const tab = currentTab();
-  const view = tab === 'log' ? logView(ctx) : tab === 'projects' ? projectsView(ctx) : historyView(ctx);
+  const view = TABS.find((t) => t.id === tab)!.view(ctx);
   document.querySelector('#app')!.replaceChildren(
     h(
       'header',
@@ -108,7 +112,15 @@ async function start() {
   });
   window.addEventListener('online', render);
   window.addEventListener('offline', render);
-  await reload();
+  await reload(); // show the app first – it never waits for Microsoft
+
+  // Then sign-in: finishes a sign-in if we just came back from Microsoft's page.
+  try {
+    await initAuth();
+  } catch (err) {
+    console.warn('Microsoft sign-in could not start', err);
+  }
+  render();
 }
 
 start();

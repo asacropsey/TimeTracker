@@ -10,7 +10,9 @@ export interface AppContext {
   lastMilestoneId: string;
   save(events: AppEvent[]): Promise<void>;
   rememberSelection(projectId: string, milestoneId: string): void;
-  goTo(tab: 'log' | 'projects' | 'history'): void;
+  goTo(tab: 'log' | 'projects' | 'history' | 'account'): void;
+  /** Redraws the current screen (e.g. after an answer from Microsoft arrived). */
+  rerender(): void;
 }
 
 type Child = Node | string | null | undefined | false;

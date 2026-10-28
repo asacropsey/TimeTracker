@@ -20,10 +20,12 @@ The owner of this project is **not a programmer**. Therefore:
 - **Hosting**: GitHub Pages (free, HTTPS). The repository may be public: it contains only code,
   never any personal data or secrets.
 - **Sign-in**: Microsoft personal account via MSAL.js (`@azure/msal-browser`), single-page-app
-  flow with PKCE. Delegated permission `Files.ReadWrite` only (plus `offline_access`, `User.Read`).
+  flow with PKCE. Delegated permission `Files.ReadWrite.AppFolder` only (plus `offline_access`,
+  `User.Read`). Decided by the owner in Phase 3: the app may only access its own OneDrive folder
+  (`Apps/Time Tracker/`, Graph path `/me/drive/special/approot`), never any other file.
 - **Local storage on each device**: IndexedDB. Call `navigator.storage.persist()` so the browser
   does not delete data.
-- **Master record**: `TimeTracker/timetracker.xlsx` in the owner's personal OneDrive.
+- **Master record**: `timetracker.xlsx` in the app folder (`OneDrive/Apps/Time Tracker/`).
 - **Important constraint**: The Microsoft Graph Excel *workbook* API (`/workbook/...`, table rows)
   is NOT supported on personal OneDrive. Do not use it. Instead use the plain file API:
   download the .xlsx, append rows in the browser with **ExcelJS**, upload it back.
@@ -86,7 +88,7 @@ device), so entries from phone and computer form one continuous chain:
    e. Mark events as `synced`. Pull all events into IndexedDB so both devices show the same data.
 3. If the file is locked (owner has it open in desktop Excel), show: "Please close
    timetracker.xlsx in Excel – your entries are safe and will sync automatically."
-4. Before every upload, keep a backup copy in `TimeTracker/backups/` (keep the last 30).
+4. Before every upload, keep a backup copy in `backups/` inside the app folder (keep the last 30).
 5. Always show sync status clearly: "All synced" / "3 entries waiting to sync" / "Offline".
 6. If the file doesn't exist yet, create it.
 
