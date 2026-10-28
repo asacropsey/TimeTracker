@@ -75,12 +75,21 @@ export class OneDriveFile implements FileStore {
     if (this.backupsFolderReady) return;
     const exists = await graphFetch(`${APP_FOLDER}:/backups`);
     if (exists.status === 404) {
-      const created = await graphFetch(`${APP_FOLDER}/children`, {
+      // Creating a folder needs the app folder's real ID (its nickname "special/approot" is
+      // refused by Microsoft for this, with "invalidRequest").
+      const appFolder = await graphFetch(`${APP_FOLDER}?$select=id`);
+      if (!appFolder.ok) throw await GraphError.from(appFolder, 'looking up the app folder');
+      const { id } = (await appFolder.json()) as { id: string };
+      const created = await graphFetch(`/me/drive/items/${encodeURIComponent(id)}/children`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'backups', folder: {}, '@microsoft.graph.conflictBehavior': 'fail' }),
       });
-      if (!created.ok && created.status !== 409) throw await GraphError.from(created, 'creating the backups folder');
+      // 409 = exists already. Any other refusal: carry on – uploading the backup into
+      // "backups/…" creates the folder by itself; if that fails too, its error is shown.
+      if (!created.ok && created.status !== 409 && created.status !== 400) {
+        throw await GraphError.from(created, 'creating the backups folder');
+      }
     } else if (!exists.ok) {
       throw await GraphError.from(exists, 'looking up the backups folder');
     }
