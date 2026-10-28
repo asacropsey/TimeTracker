@@ -25,11 +25,15 @@ function entry(minutes: number, projectId = 'p1') {
 }
 
 describe('event store is append-only', () => {
-  it('offers no function to change or delete events', () => {
+  it('offers no function to change or delete events (only the guarded "startFresh")', () => {
     const names = Object.keys(db);
-    for (const forbidden of ['update', 'delete', 'remove', 'put', 'clear', 'edit']) {
+    for (const forbidden of ['update', 'delete', 'remove', 'put', 'clear', 'edit', 'erase', 'wipe']) {
       expect(names.filter((n) => n.toLowerCase().includes(forbidden))).toEqual([]);
     }
+    expect(names.sort()).toEqual([
+      'appendEvents', 'closeDbForTests', 'countPending', 'getAllEvents', 'getPendingEvents', 'getSetting',
+      'importSyncedEvents', 'markSynced', 'requestPersistentStorage', 'setSetting', 'startFresh',
+    ]); // a new function here must be reviewed against the append-only rule
   });
 
   it('refuses to save an event whose ID already exists, and keeps the original', async () => {
@@ -54,6 +58,41 @@ describe('event store is append-only', () => {
   it('marks every new event as waiting to sync', async () => {
     await appendEvents([...entry(10), ...entry(20)]);
     expect(await countPending()).toBe(2);
+  });
+});
+
+describe('syncing on the device', () => {
+  it('marking as synced only removes events from the waiting list, never the events', async () => {
+    const events = [...entry(10), ...entry(20)];
+    await db.appendEvents(events);
+    await db.markSynced([events[0].event_id]);
+    expect(await getAllEvents()).toHaveLength(2);
+    expect((await db.getPendingEvents()).map((e) => e.event_id)).toEqual([events[1].event_id]);
+  });
+
+  it('events from the other device are added, but never overwrite an existing one', async () => {
+    const [mine] = entry(60);
+    await appendEvents([mine]);
+    const [theirs] = entry(45);
+    await db.importSyncedEvents([{ ...mine, duration_minutes: 999 }, theirs]);
+    const stored = await getAllEvents();
+    expect(stored).toHaveLength(2);
+    expect(stored.find((e) => e.event_id === mine.event_id)).toMatchObject({ duration_minutes: 60 });
+    expect(await countPending()).toBe(1); // received events are not "waiting to sync"
+  });
+
+  it('"Start fresh" erases test data before the first sync – and switches syncing on', async () => {
+    await appendEvents(entry(60));
+    await db.startFresh();
+    expect(await getAllEvents()).toEqual([]);
+    expect(await db.getSetting('syncEnabled')).toBe(true);
+  });
+
+  it('"Start fresh" refuses once syncing has been switched on', async () => {
+    await appendEvents(entry(60));
+    await db.setSetting('syncEnabled', true);
+    await expect(db.startFresh()).rejects.toThrow();
+    expect(await getAllEvents()).toHaveLength(1);
   });
 });
 

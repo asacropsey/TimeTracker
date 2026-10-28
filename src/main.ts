@@ -7,7 +7,8 @@ import '@fontsource/eb-garamond/latin-400.css';
 import '@fontsource/eb-garamond/latin-400-italic.css';
 import '@fontsource/eb-garamond/latin-600.css';
 import './style.css';
-import { initAuth } from './auth';
+import { currentAccount, initAuth } from './auth';
+import { enableSync, loadSyncSettings, onSyncChange, requestSync, statusText, sync } from './sync/controller';
 import { appendEvents, countPending, getAllEvents, getSetting, requestPersistentStorage, setSetting } from './db';
 import { buildState } from './state';
 import type { AppEvent } from './types';
@@ -29,11 +30,11 @@ const TABS: { id: Tab; label: string; icon: () => Element; view: (ctx: AppContex
 // Which kind of device this is. It is written into every event ("phone" or "computer").
 const device = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ? 'phone' : 'computer';
 
-let pending = 0;
-
 const ctx: AppContext = {
   state: buildState([]),
   device,
+  pendingCount: 0,
+  reloadData: () => reload(),
   lastProjectId: '',
   lastMilestoneId: '',
   async save(events: AppEvent[]) {
@@ -44,6 +45,7 @@ const ctx: AppContext = {
       alert(`Sorry, this could not be saved on this device.\n\n${err}`);
     }
     await reload();
+    requestSync(); // saved on the device first; copied to Excel in the background
   },
   rememberSelection(projectId, milestoneId) {
     ctx.lastProjectId = projectId;
@@ -62,12 +64,6 @@ function currentTab(): Tab {
   return TABS.some((t) => t.id === tab) ? tab : 'log';
 }
 
-function syncStatus(): string {
-  if (!navigator.onLine) return 'Offline – entries are saved on this device';
-  // Syncing to Excel arrives in a later phase; until then everything stays on this device.
-  return pending === 0 ? 'Nothing saved yet' : `${pending} changes saved on this device only (Excel sync comes later)`;
-}
-
 function render() {
   const tab = currentTab();
   const view = TABS.find((t) => t.id === tab)!.view(ctx);
@@ -79,7 +75,7 @@ function render() {
         'div',
         { class: 'header-inner' },
         flame(),
-        h('div', {}, h('h1', {}, 'Time Tracker'), h('p', { class: 'status' }, syncStatus())),
+        h('div', {}, h('h1', {}, 'Time Tracker'), h('p', { class: 'status' }, statusText(ctx.pendingCount))),
       ),
     ),
     h('main', {}, view),
@@ -95,10 +91,27 @@ function render() {
   );
 }
 
-async function reload() {
+async function loadData() {
   ctx.state = buildState(await getAllEvents());
-  pending = await countPending();
+  ctx.pendingCount = await countPending();
+}
+
+async function reload() {
+  await loadData();
   render();
+}
+
+/**
+ * After a sync: load what arrived from the other device, and update the status line.
+ * The rest of the screen is only redrawn on the Account tab – never while you might be typing.
+ */
+async function afterSyncChange() {
+  await loadData();
+  if (currentTab() === 'account') render();
+  else {
+    const status = document.querySelector('header .status');
+    if (status) status.textContent = statusText(ctx.pendingCount);
+  }
 }
 
 async function start() {
@@ -110,8 +123,8 @@ async function start() {
     render();
     window.scrollTo(0, 0);
   });
-  window.addEventListener('online', render);
-  window.addEventListener('offline', render);
+  await loadSyncSettings();
+  onSyncChange(() => void afterSyncChange());
   await reload(); // show the app first – it never waits for Microsoft
 
   // Then sign-in: finishes a sign-in if we just came back from Microsoft's page.
@@ -120,7 +133,16 @@ async function start() {
   } catch (err) {
     console.warn('Microsoft sign-in could not start', err);
   }
+  // A device with nothing on it (e.g. a new phone) can start syncing right away.
+  if (currentAccount() && !sync.enabled && ctx.pendingCount === 0) await enableSync();
   render();
+
+  window.addEventListener('online', () => void requestSync());
+  window.addEventListener('offline', () => void afterSyncChange());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void requestSync(); // app reopened from the background
+  });
+  await requestSync();
 }
 
 start();

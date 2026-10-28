@@ -6,6 +6,10 @@ import type { AppEvent, AppState, TimeEntryEvent } from '../types';
 export interface AppContext {
   state: AppState;
   device: string;
+  /** Number of events on this device not yet in the Excel file. */
+  pendingCount: number;
+  /** Reloads all data from the device's database and redraws. */
+  reloadData(): Promise<void>;
   lastProjectId: string;
   lastMilestoneId: string;
   save(events: AppEvent[]): Promise<void>;

@@ -323,6 +323,9 @@ button.link {
   font-size: 0.92rem;
 }
 .correction strong { color: var(--ember-text); }
+.problems ul { margin: 8px 0; padding-left: 20px; color: var(--ember-text); }
+.problems li { margin: 4px 0; }
+.card > button.big + button.big { margin-top: 10px; }
 .correct-form { margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--gold-soft); }
 
 /* ----- Flame for a running timer (Phase 5) ----- */
