@@ -116,6 +116,48 @@ device), so entries from phone and computer form one continuous chain:
 - Read-only list of all entries with filters (project, milestone, date range); corrections shown
   linked to the original; device shown (phone/computer).
 
+## Visual design
+Reference images: `design/crest-portrait.jpg` and `design/crest-landscape.jpg` (the owner's own
+coat of arms). **Look at both images before designing.** The app should feel like it belongs to
+this crest: a dark woven tapestry with gold embroidery, heraldic, calm and dignified, not playful.
+
+### Palette (derived from the crest – fine-tune against the images)
+| Role | Colour | Use |
+|---|---|---|
+| Background | deep midnight navy ~ `#0E1726` | app background |
+| Surface | navy ~ `#16233A` | cards, panels (like the shield) |
+| Gold | antique gold ~ `#C9A04E` | borders, headings, icons, key numbers |
+| Flame | bright warm gold ~ `#F2C46B` | primary buttons, running timer, highlights |
+| Oak green | muted olive ~ `#5E6B3A` | progress bars, "done" states |
+| Parchment | ~ `#E3CF9F` | body text on dark, banner labels |
+| Silver-grey | ~ `#9A9A9A` | secondary text (the fox) |
+| Ember | muted copper-red ~ `#B5653A` | overruns > 100 %, warnings |
+
+Dark theme only. All text must meet WCAG AA contrast on its background.
+
+### Typography
+- Headings: a classical inscription serif in small caps, e.g. **Cinzel** (Google Fonts).
+- Body and numbers: a highly readable serif, e.g. **EB Garamond** or **Cormorant Garamond**
+  (min. 16 px on phone); use tabular figures for times and hours.
+- Bundle the fonts with the app so they work offline.
+
+### Ornament & motifs (use sparingly – readability first)
+- Thin double gold rule borders around cards, like the tapestry frame.
+- **Eight-pointed star** as the divider and small accent icon.
+- **Flame** = the timer: when a timer is running, show a softly glowing flame (subtle CSS
+  animation, respects "reduce motion").
+- **Shield shape** for project cards / project icons.
+- **Ribbon banner** for page titles and for milestone names when complete.
+- Oak-leaf sprigs as corner ornaments on the dashboard only.
+- Motto "SOLUS NON SOLUM" on the start/sign-in screen.
+- Very subtle woven-fabric texture on the background (CSS or a tiny tiled image, keep the app
+  fast on mobile data).
+- App icon (home screen) and splash screen made from the crest (shield + flame, cropped square).
+
+### Tone of text
+Short, calm, slightly formal labels ("Begin", "Rest", "Record time", "Milestones").
+Plain-language error messages stay plain – clarity beats style.
+
 ## One-time setup the owner must do (guide them click by click)
 1. Create a free GitHub account (if needed) and the repository.
 2. Register the app in the Microsoft Entra admin center / Azure portal with the owner's
@@ -134,6 +176,9 @@ Multiple users, editing past entries, invoicing, native app-store apps, push not
 1. **Skeleton & local-only app**: project setup, README for non-programmers, PWA installable,
    IndexedDB event store, projects/milestones, manual entries, history, corrections – all offline,
    no Microsoft yet. Tests for append-only rules.
+1b. **Visual design**: apply the "Visual design" section to all screens built so far; create a
+   small set of reusable styles/components so later phases use them automatically. Show the
+   owner screenshots on phone and desktop size before moving on.
 2. **Deploy to GitHub Pages** and install on the phone (still local-only data).
 3. **Microsoft sign-in** (guide through app registration).
 4. **Sync to Excel**: file creation, hash chain, eTag handling, de-duplication, backups, verify

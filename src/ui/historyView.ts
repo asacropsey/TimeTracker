@@ -14,9 +14,11 @@ import {
   projectName,
   type AppContext,
 } from './dom';
+import { banner } from './ornaments';
 
 // Kept between screen refreshes.
 const filter = { project: '', milestone: '', from: '', to: '' };
+let filterOpen = false;
 let correctingId = '';
 
 export function historyView(ctx: AppContext): HTMLElement {
@@ -50,24 +52,28 @@ export function historyView(ctx: AppContext): HTMLElement {
   const fromInput = h('input', { type: 'date', value: filter.from, onchange: () => ((filter.from = fromInput.value), refresh()) });
   const toInput = h('input', { type: 'date', value: filter.to, onchange: () => ((filter.to = toInput.value), refresh()) });
 
+  const filterPanel: HTMLDetailsElement = h(
+    'details',
+    { class: 'card', open: filterOpen, ontoggle: () => (filterOpen = filterPanel.open) },
+    h('summary', {}, 'Filter'),
+    h('label', {}, 'Project', projectSelect),
+    h('label', {}, 'Milestone', milestoneSelect),
+    h('div', { class: 'row' }, h('label', {}, 'From', fromInput), h('label', {}, 'To', toInput)),
+    h(
+      'button',
+      { onclick: () => (Object.assign(filter, { project: '', milestone: '', from: '', to: '' }), refresh()) },
+      'Clear filter',
+    ),
+  );
+  const filtering = !!(filter.project || filter.milestone || filter.from || filter.to);
+
   return h(
     'div',
     {},
-    h(
-      'details',
-      { class: 'card', open: !!(filter.project || filter.milestone || filter.from || filter.to) },
-      h('summary', {}, 'Filter'),
-      h('label', {}, 'Project', projectSelect),
-      h('label', {}, 'Milestone', milestoneSelect),
-      h('div', { class: 'row' }, h('label', {}, 'From', fromInput), h('label', {}, 'To', toInput)),
-      h(
-        'button',
-        { onclick: () => (Object.assign(filter, { project: '', milestone: '', from: '', to: '' }), refresh()) },
-        'Clear filter',
-      ),
-    ),
-    h('p', { class: 'summary' }, `${shown.length} ${shown.length === 1 ? 'entry' : 'entries'} · ${formatMinutes(total)}`),
-    shown.length === 0 && h('p', { class: 'muted' }, 'No entries yet.'),
+    banner('History'),
+    filterPanel,
+    h('p', { class: 'summary num' }, `${shown.length} ${shown.length === 1 ? 'entry' : 'entries'} · ${formatMinutes(total)}`),
+    shown.length === 0 && h('p', { class: 'muted' }, filtering ? 'No entries match this filter.' : 'No entries yet.'),
     ...shown.map((v) => entryCard(ctx, v)),
   );
 }
@@ -82,13 +88,13 @@ function entryCard(ctx: AppContext, v: EntryView): HTMLElement {
     { class: 'card entry' },
     h(
       'div',
-      { class: 'entry-head' },
+      { class: 'entry-head num' },
       h('strong', {}, formatMinutes(v.effective_minutes)),
       corrected && h('span', { class: 'muted strike' }, formatMinutes(e.duration_minutes)),
       h('span', { class: 'badge' }, e.device),
     ),
     h('div', {}, projectName(state, e.project_id), e.milestone_id ? ` › ${milestoneName(state, e.milestone_id)}` : ''),
-    h('div', { class: 'muted' }, formatWhen(e)),
+    h('div', { class: 'muted num' }, formatWhen(e)),
     e.note && h('div', { class: 'note' }, e.note),
     ...v.corrections.map((c) =>
       h(

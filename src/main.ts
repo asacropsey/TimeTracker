@@ -1,5 +1,11 @@
 // Starts the app: loads the data, shows the header, the current screen and the bottom tabs.
 
+// Fonts are bundled with the app so they also work offline (Latin letters only, incl. ä ö ü ß).
+import '@fontsource/cinzel/latin-600.css';
+import '@fontsource/cinzel/latin-700.css';
+import '@fontsource/eb-garamond/latin-400.css';
+import '@fontsource/eb-garamond/latin-400-italic.css';
+import '@fontsource/eb-garamond/latin-600.css';
 import './style.css';
 import { appendEvents, countPending, getAllEvents, getSetting, requestPersistentStorage, setSetting } from './db';
 import { buildState } from './state';
@@ -7,13 +13,14 @@ import type { AppEvent } from './types';
 import { h, type AppContext } from './ui/dom';
 import { historyView } from './ui/historyView';
 import { logView } from './ui/logView';
+import { flame, shield, star } from './ui/ornaments';
 import { projectsView } from './ui/projectsView';
 
 type Tab = 'log' | 'projects' | 'history';
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'log', label: 'Log time' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'history', label: 'History' },
+const TABS: { id: Tab; label: string; icon: () => Element }[] = [
+  { id: 'log', label: 'Record', icon: () => flame() },
+  { id: 'projects', label: 'Projects', icon: () => shield() },
+  { id: 'history', label: 'History', icon: () => star() },
 ];
 
 // Which kind of device this is. It is written into every event ("phone" or "computer").
@@ -61,12 +68,25 @@ function render() {
   const tab = currentTab();
   const view = tab === 'log' ? logView(ctx) : tab === 'projects' ? projectsView(ctx) : historyView(ctx);
   document.querySelector('#app')!.replaceChildren(
-    h('header', {}, h('h1', {}, 'Time Tracker'), h('p', { class: 'status' }, syncStatus())),
+    h(
+      'header',
+      {},
+      h(
+        'div',
+        { class: 'header-inner' },
+        flame(),
+        h('div', {}, h('h1', {}, 'Time Tracker'), h('p', { class: 'status' }, syncStatus())),
+      ),
+    ),
     h('main', {}, view),
     h(
       'nav',
       {},
-      ...TABS.map((t) => h('a', { href: `#${t.id}`, class: t.id === tab ? 'active' : '' }, t.label)),
+      h(
+        'div',
+        { class: 'nav-inner' },
+        ...TABS.map((t) => h('a', { href: `#${t.id}`, class: t.id === tab ? 'active' : '' }, t.icon(), t.label)),
+      ),
     ),
   );
 }

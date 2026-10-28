@@ -1,18 +1,24 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const navy = '#0E1726';
+
 export default defineConfig({
   plugins: [
     // Makes the app installable on the phone and lets it work offline.
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
+      includeAssets: ['apple-touch-icon-180x180.png', 'pwa-48x48.png'],
+      workbox: {
+        // Everything the app needs offline, including fonts and the crest images.
+        globPatterns: ['**/*.{js,css,html,woff2,png,webp}'],
+      },
       manifest: {
         name: 'Time Tracker',
         short_name: 'Time Tracker',
         description: 'Track time on long-running projects',
-        theme_color: '#1f5f8b',
-        background_color: '#f4f6f8',
+        theme_color: navy,
+        background_color: navy, // splash screen colour while the app opens
         display: 'standalone',
         start_url: '.',
         scope: '.',

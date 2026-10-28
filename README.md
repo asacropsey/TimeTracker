@@ -11,6 +11,7 @@ The full plan is in [SPEC.md](SPEC.md).
 - ✅ Logging time by hand (start & end time, or just a duration)
 - ✅ History with filters, and "Correct this entry"
 - ✅ Works offline
+- ✅ Visual design from the crest (Phase 1b)
 - ⏳ Not yet: phone (Phase 2), Microsoft sign-in (3), Excel sync (4), timer (5), charts (6)
 
 **Your data is currently stored only in the browser on this computer.** It is not yet copied to
@@ -75,5 +76,9 @@ Every line should be green and end with "passed".
 | `src/events.ts` | Creates the records for each action |
 | `src/state.ts` | Calculates projects, milestones and totals from the records |
 | `src/validation.ts` | Checks what you type (end after start, nothing in the future, …) |
-| `src/ui/` | The three screens: Log time, Projects, History |
+| `src/ui/` | The three screens: Record, Projects, History |
+| `src/ui/ornaments.ts` | Star, flame, shield, divider and ribbon banner from the crest |
+| `src/style.css` | Colours, fonts and look (palette from the crest) |
+| `design/` | The crest images the design is based on |
+| `scripts/make-crest-assets.mjs` | Makes the app icons from the crest (`npm run crest`, only if the crest changes) |
 | `tests/` | Automated checks |

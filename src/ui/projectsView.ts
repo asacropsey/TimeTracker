@@ -3,6 +3,7 @@
 import { createMilestone, createProject, updateMilestone, updateProject } from '../events';
 import type { ChangeEvent, Milestone, Project } from '../types';
 import { formatHours, h, messages, type AppContext } from './dom';
+import { banner, shield } from './ornaments';
 
 let showArchived = false;
 
@@ -13,6 +14,7 @@ export function projectsView(ctx: AppContext): HTMLElement {
   return h(
     'div',
     {},
+    banner('Projects'),
     newProjectForm(ctx),
     ...active.map((p) => projectCard(ctx, p)),
     archived.length > 0 &&
@@ -36,7 +38,7 @@ function newProjectForm(ctx: AppContext): HTMLElement {
   return h(
     'details',
     { class: 'card', open: ctx.state.projects.length === 0 },
-    h('summary', {}, '+ New project'),
+    h('summary', {}, 'New project'),
     h('label', {}, 'Name', name),
     h('label', {}, 'Description', description),
     feedback,
@@ -71,13 +73,18 @@ function projectCard(ctx: AppContext, p: Project): HTMLElement {
   return h(
     'section',
     { class: p.status === 'archived' ? 'card archived' : 'card' },
-    h('h2', {}, p.name, p.status === 'archived' ? ' (archived)' : ''),
+    h(
+      'div',
+      { class: 'project-title' },
+      shield(p.name.charAt(0).toUpperCase()),
+      h('h2', {}, p.name, p.status === 'archived' ? ' (archived)' : ''),
+    ),
     p.description && h('p', { class: 'muted' }, p.description),
     h(
       'p',
-      {},
+      { class: 'num' },
       `Logged ${formatHours(logged)} of ${planned} h planned`,
-      milestones.length > 0 ? ` · ${done} of ${milestones.length} milestones done` : '',
+      milestones.length > 0 ? ` · ${done} of ${milestones.length} milestones complete` : '',
     ),
     h(
       'div',
@@ -129,8 +136,10 @@ function milestoneRow(ctx: AppContext, list: Milestone[], m: Milestone, index: n
     h(
       'div',
       { class: 'milestone-head' },
-      h('strong', {}, `${index + 1}. ${m.name}`, m.status === 'done' ? ' ✓' : ''),
-      h('span', { class: over ? 'over' : '' }, `${formatHours(logged)} / ${m.planned_hours} h · ${percent} %`),
+      m.status === 'done'
+        ? banner(`${index + 1}. ${m.name}`, 'banner small')
+        : h('span', { class: 'milestone-name' }, `${index + 1}. ${m.name}`),
+      h('span', { class: over ? 'num over' : 'num' }, `${formatHours(logged)} / ${m.planned_hours} h · ${percent} %`),
     ),
     h('div', { class: 'bar' }, h('div', { class: over ? 'fill over' : 'fill', style: `width:${Math.min(percent, 100)}%` })),
     h(
@@ -140,7 +149,7 @@ function milestoneRow(ctx: AppContext, list: Milestone[], m: Milestone, index: n
       h('button', { onclick: () => move(1), disabled: index === list.length - 1, title: 'Move down' }, '↓'),
       h('button', { onclick: rename }, 'Rename'),
       h('button', { onclick: changeHours }, 'Planned hours'),
-      h('button', { onclick: toggleDone }, m.status === 'done' ? 'Reopen' : 'Mark done'),
+      h('button', { onclick: toggleDone }, m.status === 'done' ? 'Reopen' : 'Mark complete'),
     ),
   );
 }
@@ -160,7 +169,7 @@ function newMilestoneForm(ctx: AppContext, p: Project, milestones: Milestone[]):
   return h(
     'details',
     { class: 'add-milestone' },
-    h('summary', {}, '+ Add milestone'),
+    h('summary', {}, 'Add milestone'),
     h('label', {}, 'Name', name),
     h('label', {}, 'Planned hours', hours),
     feedback,

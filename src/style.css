@@ -1,37 +1,81 @@
-/* Phone first: big touch targets, one column, tabs at the bottom (reachable with the thumb). */
+/*
+  Time Tracker – visual style, taken from the owner's crest (see design/ and SPEC.md "Visual design").
+  Dark woven tapestry, gold embroidery, calm and dignified. Phone first.
+
+  Reusable building blocks (use these in new screens):
+    .card            panel with a double gold rule (like the tapestry frame)
+    .banner          ribbon banner for page titles (.banner.small for completed milestones)
+    .divider         gold line with an eight-pointed star (ornaments.ts: divider())
+    button.primary   flame-gold main action;  button (plain) = gold outline;  button.link
+    .bar > .fill     progress bar (.fill.over = more than 100 %)
+    .msg.error / .msg.warning / .msg.success
+    .num             numbers with equal-width digits (times, hours)
+    .flame.burning   softly glowing flame for a running timer (ornaments.ts: flame())
+*/
 
 :root {
-  --blue: #1f5f8b;
-  --bg: #f4f6f8;
-  --card: #ffffff;
-  --text: #1c2329;
-  --muted: #66727d;
-  --border: #d5dbe0;
-  --red: #b3261e;
-  --orange: #9a5b00;
-  --green: #1e7b34;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-size: 17px;
-  color: var(--text);
-  background: var(--bg);
+  /* Palette from the crest. Text colours are checked for WCAG AA contrast on --bg and --surface. */
+  --bg: #0e1726; /* deep midnight navy – app background */
+  --surface: #16233a; /* navy – cards, like the shield */
+  --surface-deep: #101b2d; /* input fields */
+  --gold: #c9a04e; /* antique gold – borders, headings, icons */
+  --gold-soft: rgba(201, 160, 78, 0.45); /* fainter gold for lines */
+  --flame: #f2c46b; /* bright warm gold – primary buttons, highlights */
+  --oak: #5e6b3a; /* muted olive – progress bars, done */
+  --oak-text: #a9b872; /* lighter olive for readable "done" text */
+  --parchment: #e3cf9f; /* body text */
+  --silver: #9a9a9a; /* secondary text (the fox) */
+  --ember: #b5653a; /* overruns, warnings (bars and borders) */
+  --ember-text: #e0956b; /* lighter ember for readable text */
+
+  --serif: 'EB Garamond', Garamond, 'Times New Roman', serif;
+  --display: 'Cinzel', 'Trajan Pro', 'EB Garamond', serif;
+
+  color-scheme: dark; /* dark date pickers, dropdowns and scrollbars */
+  font-family: var(--serif);
+  font-size: 18px; /* EB Garamond is small for its size; 18px reads like 16px elsewhere */
+  font-variant-numeric: lining-nums;
+  line-height: 1.4;
+  color: var(--parchment);
+  background-color: var(--bg);
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; }
 [hidden] { display: none !important; } /* hidden things stay hidden, even inside .row */
 
-header {
-  background: var(--blue);
-  color: #fff;
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 10px;
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  /* Very subtle woven-fabric texture: fine horizontal and vertical threads. */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(227, 207, 159, 0.025) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
 }
-header h1 { margin: 0; font-size: 1.25rem; }
-header .status { margin: 4px 0 0; font-size: 0.85rem; opacity: 0.9; }
 
+/* ----- Header ----- */
+header {
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 10px;
+  border-bottom: 3px double var(--gold);
+  background: rgba(14, 23, 38, 0.92);
+}
+.header-inner { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+header h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+header .flame { width: 18px; height: 24px; color: var(--flame); }
+header .status { margin: 2px 0 0; font-size: 0.85rem; color: var(--silver); }
+
+/* ----- Main area and bottom tabs ----- */
 main {
-  max-width: 640px;
+  max-width: 680px;
   margin: 0 auto;
-  padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 90px);
+  padding: 14px 14px calc(env(safe-area-inset-bottom, 0px) + 96px);
 }
 
 nav {
@@ -39,106 +83,252 @@ nav {
   bottom: 0;
   left: 0;
   right: 0;
-  display: flex;
-  background: var(--card);
-  border-top: 1px solid var(--border);
+  background: var(--surface);
+  border-top: 3px double var(--gold);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+.nav-inner { max-width: 680px; margin: 0 auto; display: flex; }
 nav a {
   flex: 1;
-  text-align: center;
-  padding: 18px 4px;
-  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px 12px;
+  color: var(--silver);
   text-decoration: none;
+  font-family: var(--display);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+}
+nav a .icon { width: 20px; height: 20px; }
+nav a .shield-icon { width: 18px; height: 21px; }
+nav a.active { color: var(--flame); }
+
+/* ----- Headings, banner, divider ----- */
+h2, h3 {
+  font-family: var(--display);
   font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
 }
-nav a.active { color: var(--blue); box-shadow: inset 0 3px 0 var(--blue); }
+h2 { margin: 0 0 8px; font-size: 1.15rem; }
+h3 { margin: 16px 0 8px; font-size: 0.95rem; }
+h3.first { margin-top: 0; }
 
+/* Ribbon banner with swallow-tail ends, like "SOLUS NON SOLUM" on the crest. */
+.banner {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 16px;
+}
+.banner > span {
+  display: inline-block;
+  padding: 7px 34px 6px;
+  background: linear-gradient(180deg, #ead8aa, var(--parchment) 45%, #cdb57f);
+  color: var(--bg);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+}
+.banner.small { display: inline-flex; margin: 0; }
+.banner.small > span { padding: 3px 22px 2px; font-size: 0.8rem; letter-spacing: 0.06em; clip-path: polygon(0 0, 100% 0, calc(100% - 9px) 50%, 100% 100%, 0 100%, 9px 50%); }
+
+.divider { display: flex; align-items: center; gap: 10px; color: var(--gold); margin: 16px 0; }
+.divider::before, .divider::after { content: ''; flex: 1; border-top: 1px solid var(--gold-soft); }
+.divider .icon { width: 14px; height: 14px; }
+
+.icon { width: 1em; height: 1em; vertical-align: -0.12em; }
+
+/* ----- Cards ----- */
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 12px;
+  background: var(--surface);
+  border: 3px double var(--gold-soft);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
 }
-.card.archived { opacity: 0.7; }
-h2 { margin: 0 0 10px; font-size: 1.15rem; }
-h3 { margin: 14px 0 8px; font-size: 1rem; }
-summary { font-weight: 600; cursor: pointer; padding: 4px 0; }
+.card.archived { border-style: dashed; border-width: 1px; background: var(--surface-deep); }
+summary {
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  padding: 4px 0;
+  list-style: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before { content: '+ '; color: var(--flame); }
+details[open] > summary::before { content: '− '; }
 
-label { display: block; margin: 10px 0; font-size: 0.9rem; color: var(--muted); }
+/* ----- Forms ----- */
+label { display: block; margin: 12px 0; font-size: 0.9rem; color: var(--silver); }
 input, select, textarea {
   display: block;
   width: 100%;
   margin-top: 4px;
-  padding: 12px;
+  padding: 11px 12px;
   font: inherit;
-  color: var(--text);
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  font-size: 1rem;
+  color: var(--parchment);
+  background: var(--surface-deep);
+  border: 1px solid var(--gold-soft);
+  border-radius: 3px;
   min-height: 48px;
 }
+input::placeholder, textarea::placeholder { color: #8c8e93; }
+input:focus, select:focus, textarea:focus, button:focus-visible, nav a:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--flame);
+  outline-offset: 1px;
+}
 .row { display: flex; gap: 10px; }
-.row > label { flex: 1; }
+.row > label { flex: 1; min-width: 0; } /* lets date boxes shrink instead of sticking out */
+.row input { min-width: 0; }
 
+/* ----- Buttons ----- */
 button {
   font: inherit;
-  padding: 10px 14px;
+  font-size: 0.95rem;
+  padding: 9px 14px;
   min-height: 44px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: #fff;
-  color: var(--text);
+  border-radius: 3px;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--parchment);
   cursor: pointer;
 }
-button:disabled { opacity: 0.4; cursor: default; }
-button.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
-button.big { width: 100%; min-height: 56px; font-size: 1.1rem; margin-top: 8px; }
-button.link { border: none; background: none; color: var(--blue); padding: 10px 0; text-decoration: underline; }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+button:hover:not(:disabled) { background: rgba(201, 160, 78, 0.12); }
+button:disabled { opacity: 0.35; cursor: default; }
+button.primary {
+  background: var(--flame);
+  border-color: var(--flame);
+  color: var(--bg);
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+button.primary:hover:not(:disabled) { background: #f6d38c; }
+button.big { width: 100%; min-height: 56px; font-size: 1.05rem; margin-top: 10px; }
+button.link {
+  border: none;
+  background: none;
+  color: var(--gold);
+  padding: 10px 0;
+  min-height: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 
-.segmented { display: flex; margin: 10px 0; }
+/* Two-way switch (Start & end / Duration) */
+.segmented { display: flex; margin: 12px 0; }
 .segmented button { flex: 1; border-radius: 0; }
-.segmented button:first-child { border-radius: 8px 0 0 8px; }
-.segmented button:last-child { border-radius: 0 8px 8px 0; border-left: none; }
-.segmented button.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.segmented button:first-child { border-radius: 3px 0 0 3px; }
+.segmented button:last-child { border-radius: 0 3px 3px 0; border-left: none; }
+.segmented button.active { background: var(--gold); color: var(--bg); font-weight: 600; }
 
-.msg { padding: 10px 12px; border-radius: 8px; margin: 8px 0; }
-.msg.error { background: #fde8e7; color: var(--red); }
-.msg.warning { background: #fff3dc; color: var(--orange); }
-.msg.success { background: #e3f4e7; color: var(--green); }
+/* ----- Messages ----- */
+.msg { padding: 10px 12px; margin: 10px 0; border-left: 3px solid; background: var(--surface-deep); }
+.msg.error { border-color: var(--ember); color: var(--ember-text); }
+.msg.warning { border-color: var(--flame); color: var(--flame); }
+.msg.success { border-color: var(--oak); color: var(--oak-text); }
 
-.muted { color: var(--muted); }
+/* ----- Text helpers ----- */
+.muted { color: var(--silver); }
 .small { font-size: 0.9rem; }
-.summary { font-weight: 600; margin: 4px 4px 12px; }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+.summary { margin: 4px 4px 14px; color: var(--gold); font-family: var(--display); letter-spacing: 0.04em; }
 
-.milestone { border-top: 1px solid var(--border); padding: 10px 0; }
-.milestone.done strong { color: var(--green); }
-.milestone-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-.over { color: var(--red); font-weight: 600; }
-.bar { height: 8px; background: #e6eaee; border-radius: 4px; margin-top: 6px; overflow: hidden; }
-.bar .fill { height: 100%; background: var(--blue); }
-.bar .fill.over { background: var(--red); }
-.milestone .actions button { padding: 6px 10px; min-height: 40px; font-size: 0.9rem; }
-.add-milestone { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
+/* ----- Welcome screen (no projects yet) ----- */
+.welcome { text-align: center; }
+.welcome img {
+  display: block;
+  width: 100%;
+  max-width: min(260px, 70%); /* small enough that the button below stays on screen */
+  margin: 0 auto 4px;
+  border: 3px double var(--gold-soft);
+}
+.welcome .motto {
+  margin: 14px 0 4px;
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+}
+@media (min-width: 720px) {
+  .welcome img { max-width: 100%; }
+}
 
-.entry-head { display: flex; align-items: baseline; gap: 10px; font-size: 1.1rem; }
+/* ----- Projects and milestones ----- */
+.project-title { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.project-title h2 { margin: 0; }
+.shield-icon { position: relative; display: inline-block; flex: none; width: 34px; height: 40px; color: var(--gold); }
+.shield-icon .shield-shape { width: 100%; height: 100%; }
+.shield-letter, .shield-icon .shield-star {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--gold);
+}
+.shield-icon .shield-star { width: 42%; height: 42%; }
+
+.milestone { border-top: 1px solid var(--gold-soft); padding: 12px 0; }
+.milestone-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.milestone-name { font-weight: 600; font-size: 1.02rem; }
+.milestone.done .milestone-name { color: var(--oak-text); }
+.over { color: var(--ember-text); font-weight: 600; }
+.bar {
+  height: 9px;
+  background: var(--surface-deep);
+  border: 1px solid var(--gold-soft);
+  border-radius: 1px;
+  margin-top: 7px;
+  overflow: hidden;
+}
+.bar .fill { height: 100%; background: var(--oak); }
+.bar .fill.over { background: var(--ember); }
+.milestone .actions button { padding: 5px 10px; min-height: 40px; font-size: 0.88rem; }
+.add-milestone { border-top: 1px solid var(--gold-soft); padding-top: 12px; margin-top: 2px; }
+
+/* ----- History ----- */
+.entry-head { display: flex; align-items: baseline; gap: 10px; font-size: 1.15rem; }
+.entry-head strong { color: var(--flame); }
 .strike { text-decoration: line-through; font-size: 0.9rem; }
 .badge {
   margin-left: auto;
   font-size: 0.75rem;
-  padding: 2px 8px;
+  padding: 1px 9px;
+  border: 1px solid var(--gold-soft);
   border-radius: 10px;
-  background: #e6eef5;
-  color: var(--blue);
+  color: var(--silver);
+  letter-spacing: 0.04em;
 }
-.note { margin-top: 6px; white-space: pre-wrap; }
+.note { margin-top: 6px; white-space: pre-wrap; font-style: italic; }
 .correction {
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 8px 10px;
-  border-left: 3px solid var(--orange);
-  background: #fff8ea;
-  font-size: 0.9rem;
+  border-left: 3px solid var(--ember);
+  background: var(--surface-deep);
+  font-size: 0.92rem;
 }
-.correct-form { margin-top: 10px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.correction strong { color: var(--ember-text); }
+.correct-form { margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--gold-soft); }
+
+/* ----- Flame for a running timer (Phase 5) ----- */
+.flame.burning { color: var(--flame); filter: drop-shadow(0 0 6px rgba(242, 196, 107, 0.7)); animation: flicker 2.4s ease-in-out infinite; }
+@keyframes flicker {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(242, 196, 107, 0.55)); }
+  50% { transform: scale(1.04, 1.07); filter: drop-shadow(0 0 10px rgba(242, 196, 107, 0.85)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flame.burning { animation: none; }
+}

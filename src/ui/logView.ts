@@ -3,6 +3,7 @@
 import { createTimeEntry } from '../events';
 import { localDate, validateManualEntry } from '../validation';
 import { confirmWarnings, formatMinutes, formatWhen, h, messages, milestoneName, projectName, type AppContext } from './dom';
+import { banner, divider } from './ornaments';
 
 // Kept between screen refreshes.
 let mode: 'times' | 'duration' = 'times';
@@ -12,15 +13,7 @@ export function logView(ctx: AppContext): HTMLElement {
   const { state } = ctx;
   const projects = state.projects.filter((p) => p.status === 'active');
 
-  if (projects.length === 0) {
-    return h(
-      'section',
-      { class: 'card' },
-      h('h2', {}, 'Log time'),
-      h('p', {}, 'First create a project (for example "WP-Examen").'),
-      h('button', { class: 'primary big', onclick: () => ctx.goTo('projects') }, 'Create a project'),
-    );
-  }
+  if (projects.length === 0) return welcome(ctx);
 
   const projectSelect = h(
     'select',
@@ -107,10 +100,10 @@ export function logView(ctx: AppContext): HTMLElement {
   return h(
     'div',
     {},
+    banner('Record time'),
     h(
       'section',
       { class: 'card' },
-      h('h2', {}, 'Log time'),
       h('label', {}, 'Project', projectSelect),
       h('label', {}, 'Milestone', milestoneSelect),
       h('div', { class: 'segmented' }, timesButton, durationButton),
@@ -119,18 +112,18 @@ export function logView(ctx: AppContext): HTMLElement {
       durationFields,
       h('label', {}, 'Note', noteInput),
       feedback,
-      h('button', { class: 'primary big', onclick: save }, 'Save entry'),
+      h('button', { class: 'primary big', onclick: save }, 'Record'),
     ),
     recent.length > 0 &&
       h(
         'section',
         { class: 'card' },
-        h('h3', {}, 'Latest entries'),
+        h('h3', { class: 'first' }, 'Latest entries'),
         ...recent.map((v) =>
           h(
             'p',
             { class: 'small' },
-            h('strong', {}, formatMinutes(v.effective_minutes)),
+            h('strong', { class: 'num' }, formatMinutes(v.effective_minutes)),
             ` · ${projectName(state, v.entry.project_id)}`,
             v.entry.milestone_id ? ` › ${milestoneName(state, v.entry.milestone_id)}` : '',
             h('br', {}),
@@ -138,5 +131,24 @@ export function logView(ctx: AppContext): HTMLElement {
           ),
         ),
       ),
+  );
+}
+
+/** First screen when there are no projects yet: the crest, the motto and one clear next step. */
+function welcome(ctx: AppContext): HTMLElement {
+  const base = import.meta.env.BASE_URL;
+  return h(
+    'section',
+    { class: 'welcome' },
+    h(
+      'picture',
+      {},
+      h('source', { media: '(min-width: 720px)', srcset: `${base}crest-wide.webp` }),
+      h('img', { src: `${base}crest.webp`, alt: 'Coat of arms with flame, fox and shield' }),
+    ),
+    h('p', { class: 'motto' }, 'SOLUS NON SOLUM'),
+    divider(),
+    h('p', {}, 'Begin by creating your first project, for example "WP-Examen".'),
+    h('button', { class: 'primary big', onclick: () => ctx.goTo('projects') }, 'Create a project'),
   );
 }
