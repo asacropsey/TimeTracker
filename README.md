@@ -14,7 +14,7 @@ The full plan is in [SPEC.md](SPEC.md).
 
 New versions install themselves: the next time the app is opened with internet, it updates.
 
-## Current status: Phase 4 – syncing with Excel in OneDrive
+## Current status: Phase 5 – timer
 
 - ✅ Projects and milestones (create, rename, archive, planned hours, mark done, reorder)
 - ✅ Logging time by hand (start & end time, or just a duration)
@@ -24,7 +24,8 @@ New versions install themselves: the next time the app is opened with internet, 
 - ✅ Published online, installable on the phone (Phase 2)
 - ✅ Microsoft sign-in, personal account, app folder only (Phase 3)
 - ✅ Sync to `OneDrive › Apps › Time Tracker › timetracker.xlsx` with fingerprint chain, backups and "Verify data" (Phase 4)
-- ⏳ Not yet: timer (5), charts (6), polish (7)
+- ✅ Timer: Begin / Rest on the Record tab, survives closing the app, asks after 8 hours (Phase 5)
+- ⏳ Not yet: dashboard and charts (6), polish (7)
 
 **How your data is kept:** every entry is saved on the device first, then copied to the Excel
 file whenever the device is online and signed in. Phone and computer share the same data through

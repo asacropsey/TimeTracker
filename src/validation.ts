@@ -2,7 +2,7 @@
 // "errors" block saving; "warnings" only ask the user to confirm.
 
 const TEN_HOURS = 10 * 60;
-const LONG_WARNING = 'This is longer than 10 hours. Is that correct?';
+export const LONG_WARNING = 'This is longer than 10 hours. Is that correct?';
 
 export interface ManualEntryInput {
   mode: 'times' | 'duration';
@@ -25,6 +25,12 @@ export interface EntryCheck {
 export function localDate(d: Date = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** A moment as 'YYYY-MM-DDTHH:mm' in local time (the format entries are stored in). */
+export function localDateTime(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${localDate(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 export function validateManualEntry(input: ManualEntryInput, now: Date = new Date()): EntryCheck {

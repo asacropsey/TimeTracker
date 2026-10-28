@@ -11,6 +11,7 @@ import { currentAccount, initAuth } from './auth';
 import { enableSync, loadSyncSettings, onSyncChange, requestSync, statusText, sync } from './sync/controller';
 import { appendEvents, countPending, getAllEvents, getSetting, requestPersistentStorage, setSetting } from './db';
 import { buildState } from './state';
+import { elapsedMs, formatClock, isLongRunning, loadTimer, saveTimer } from './timer';
 import type { AppEvent } from './types';
 import { accountView } from './ui/accountView';
 import { h, type AppContext } from './ui/dom';
@@ -38,14 +39,27 @@ const ctx: AppContext = {
   lastProjectId: '',
   lastMilestoneId: '',
   async save(events: AppEvent[]) {
-    if (events.length === 0) return;
+    if (events.length === 0) return true;
+    let saved = true;
     try {
       await appendEvents(events);
     } catch (err) {
       alert(`Sorry, this could not be saved on this device.\n\n${err}`);
+      saved = false;
     }
     await reload();
     requestSync(); // saved on the device first; copied to Excel in the background
+    return saved;
+  },
+  timer: null,
+  async setTimer(timer) {
+    await saveTimer(timer);
+    ctx.timer = timer;
+    render();
+  },
+  async setTimerQuietly(timer) {
+    await saveTimer(timer);
+    ctx.timer = timer;
   },
   rememberSelection(projectId, milestoneId) {
     ctx.lastProjectId = projectId;
@@ -64,6 +78,14 @@ function currentTab(): Tab {
   return TABS.some((t) => t.id === tab) ? tab : 'log';
 }
 
+/** The line under the title: the running timer (if any) and the sync status. */
+function headerStatus(): string {
+  const sync = statusText(ctx.pendingCount);
+  if (!ctx.timer) return sync;
+  const long = isLongRunning(ctx.timer) && !ctx.timer.long_warning_dismissed;
+  return `Timer ${formatClock(elapsedMs(ctx.timer))}${long ? ' – still running? See Record' : ''} · ${sync}`;
+}
+
 function render() {
   const tab = currentTab();
   const view = TABS.find((t) => t.id === tab)!.view(ctx);
@@ -74,8 +96,8 @@ function render() {
       h(
         'div',
         { class: 'header-inner' },
-        flame(),
-        h('div', {}, h('h1', {}, 'Time Tracker'), h('p', { class: 'status' }, statusText(ctx.pendingCount))),
+        flame(ctx.timer ? 'icon burning' : 'icon'), // the flame glows while the timer runs
+        h('div', {}, h('h1', {}, 'Time Tracker'), h('p', { class: 'status' }, headerStatus())),
       ),
     ),
     h('main', {}, view),
@@ -108,9 +130,16 @@ async function reload() {
 async function afterSyncChange() {
   await loadData();
   if (currentTab() === 'account') render();
-  else {
-    const status = document.querySelector('header .status');
-    if (status) status.textContent = statusText(ctx.pendingCount);
+  else updateLiveText();
+}
+
+/** Updates only the ticking clock and the status line – nothing you might be typing in. */
+function updateLiveText() {
+  const status = document.querySelector('header .status');
+  if (status) status.textContent = headerStatus();
+  if (ctx.timer) {
+    const clock = formatClock(elapsedMs(ctx.timer));
+    document.querySelectorAll('[data-clock]').forEach((el) => (el.textContent = clock));
   }
 }
 
@@ -124,8 +153,10 @@ async function start() {
     window.scrollTo(0, 0);
   });
   await loadSyncSettings();
+  ctx.timer = await loadTimer();
   onSyncChange(() => void afterSyncChange());
   await reload(); // show the app first – it never waits for Microsoft
+  setInterval(() => ctx.timer && updateLiveText(), 1000); // the timer's clock ticks every second
 
   // Then sign-in: finishes a sign-in if we just came back from Microsoft's page.
   try {
@@ -140,7 +171,10 @@ async function start() {
   window.addEventListener('online', () => void requestSync());
   window.addEventListener('offline', () => void afterSyncChange());
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') void requestSync(); // app reopened from the background
+    if (document.visibilityState !== 'visible') return;
+    // App reopened from the background: show the 8-hour question if it is due, and sync.
+    if (ctx.timer && currentTab() === 'log' && isLongRunning(ctx.timer) && !document.querySelector('main :focus')) render();
+    void requestSync();
   });
   await requestSync();
 }

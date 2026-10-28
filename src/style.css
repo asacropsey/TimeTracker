@@ -328,7 +328,24 @@ button.link {
 .card > button.big + button.big { margin-top: 10px; }
 .correct-form { margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--gold-soft); }
 
-/* ----- Flame for a running timer (Phase 5) ----- */
+/* ----- Timer on the Record tab ----- */
+button.begin { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.25rem; min-height: 64px; }
+button.begin .flame { width: 18px; height: 24px; color: var(--bg); }
+.timer.running { text-align: left; }
+.timer-flame { display: flex; justify-content: center; margin: 4px 0 2px; }
+.timer-flame .flame { width: 44px; height: 58px; }
+.clock {
+  text-align: center;
+  font-size: 3rem;
+  line-height: 1.1;
+  color: var(--flame);
+  letter-spacing: 0.02em;
+}
+.timer .center { margin: 4px 0; }
+.msg p.first { margin-top: 0; }
+.stop-chooser { border-top: 1px dashed var(--gold-soft); margin-top: 10px; padding-top: 4px; }
+
+/* ----- Flame for a running timer ----- */
 .flame.burning { color: var(--flame); filter: drop-shadow(0 0 6px rgba(242, 196, 107, 0.7)); animation: flicker 2.4s ease-in-out infinite; }
 @keyframes flicker {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(242, 196, 107, 0.55)); }

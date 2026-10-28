@@ -1,5 +1,6 @@
 // Small helpers for building the screens and formatting numbers and dates.
 
+import type { RunningTimer } from '../timer';
 import type { AppEvent, AppState, TimeEntryEvent } from '../types';
 
 /** Everything a screen needs: the current data and a way to save new events. */
@@ -10,9 +11,16 @@ export interface AppContext {
   pendingCount: number;
   /** Reloads all data from the device's database and redraws. */
   reloadData(): Promise<void>;
+  /** The timer running on this device (null = none). */
+  timer: RunningTimer | null;
+  /** Starts, changes or (with null) clears the timer, then redraws. */
+  setTimer(timer: RunningTimer | null): Promise<void>;
+  /** Stores a change to the running timer (e.g. its note) without redrawing. */
+  setTimerQuietly(timer: RunningTimer): Promise<void>;
   lastProjectId: string;
   lastMilestoneId: string;
-  save(events: AppEvent[]): Promise<void>;
+  /** Saves new events on the device. Returns false (after telling the user) if that failed. */
+  save(events: AppEvent[]): Promise<boolean>;
   rememberSelection(projectId: string, milestoneId: string): void;
   goTo(tab: 'log' | 'projects' | 'history' | 'account'): void;
   /** Redraws the current screen (e.g. after an answer from Microsoft arrived). */
@@ -64,10 +72,12 @@ export function formatDate(date: string): string {
   });
 }
 
-/** When the work happened, e.g. "Tue, 27 Oct 2026 · 08:00–09:30" */
+/** When the work happened, e.g. "Tue, 27 Oct 2026 · 08:00–09:30" or "… · 23:15–00:40 (+1 day)" */
 export function formatWhen(e: TimeEntryEvent): string {
   const date = formatDate(e.start);
-  return e.start.length > 10 ? `${date} · ${e.start.slice(11)}–${e.end.slice(11)}` : date;
+  if (e.start.length <= 10) return date;
+  const days = Math.round((Date.parse(e.end.slice(0, 10)) - Date.parse(e.start.slice(0, 10))) / 86_400_000);
+  return `${date} · ${e.start.slice(11)}–${e.end.slice(11)}${days > 0 ? ` (+${days} day${days > 1 ? 's' : ''})` : ''}`;
 }
 
 /** Shows errors (red) and warnings (orange) in a box. */
