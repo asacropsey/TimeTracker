@@ -302,11 +302,6 @@ button.link {
 .add-milestone { border-top: 1px solid var(--gold-soft); padding-top: 12px; margin-top: 2px; }
 
 /* ----- Progress (dashboard) ----- */
-.card.dash { position: relative; }
-.card.dash > h2:first-of-type, .card.dash > .project-title { padding: 0 20px; }
-.sprig { position: absolute; top: 4px; width: 30px; height: 30px; color: var(--oak-text); opacity: 0.55; pointer-events: none; }
-.sprig.left { left: 4px; }
-.sprig.right { right: 4px; transform: scaleX(-1); }
 .hero {
   text-align: center;
   font-size: 2.6rem;
@@ -332,6 +327,9 @@ button.link {
 .stat > span:first-child { color: var(--silver); }
 .bar .fill.gold { background: var(--gold); }
 .manage { border-top: 1px solid var(--gold-soft); margin-top: 12px; }
+.manage-milestone { padding: 10px 0; border-bottom: 1px solid var(--gold-soft); }
+.manage-milestone .actions { margin-top: 6px; }
+.manage-milestone .actions button { padding: 5px 10px; min-height: 40px; font-size: 0.88rem; }
 
 /* ----- History ----- */
 .entry-head { display: flex; align-items: baseline; gap: 10px; font-size: 1.15rem; }

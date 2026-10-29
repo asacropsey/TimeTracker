@@ -5,7 +5,7 @@ import { createMilestone, createProject, updateMilestone, updateProject } from '
 import { lastWeeks, milestonePercent, minutesPerWeek, OTHER_COLOR, projectColor, summarize, type ProjectSummary } from '../progress';
 import type { ChangeEvent, Milestone, Project } from '../types';
 import { formatHours, formatMinutes, h, messages, type AppContext } from './dom';
-import { banner, oakSprig, shield } from './ornaments';
+import { banner, shield } from './ornaments';
 
 const CHART_WEEKS = 12;
 
@@ -36,9 +36,8 @@ export function progressView(ctx: AppContext): HTMLElement {
   );
 }
 
-/** A dashboard panel: a card with oak-leaf sprigs in the top corners (dashboard only). */
 function dashCard(...children: (Node | string | false | null)[]): HTMLElement {
-  return h('section', { class: 'card dash' }, oakSprig('sprig left'), oakSprig('sprig right'), ...children);
+  return h('section', { class: 'card' }, ...children);
 }
 
 const swatch = (color: string) => h('span', { class: 'swatch', style: `background:${color}` });
@@ -156,9 +155,7 @@ function projectCard(ctx: AppContext, s: ProjectSummary): HTMLElement {
 
   return h(
     'section',
-    { class: p.status === 'archived' ? 'card dash archived' : 'card dash' },
-    oakSprig('sprig left'),
-    oakSprig('sprig right'),
+    { class: p.status === 'archived' ? 'card archived' : 'card' },
     h(
       'div',
       { class: 'project-title' },
@@ -178,15 +175,24 @@ function projectCard(ctx: AppContext, s: ProjectSummary): HTMLElement {
       h('p', { class: 'small muted' }, 'Time spent is not the same as real progress – that is why both are shown.'),
 
     milestones.length > 0 && h('h3', {}, 'Milestones'),
-    ...milestones.map((m, i) => milestoneRow(ctx, milestones, m, i, isManaging)),
+    ...milestones.map((m, i) => milestoneRow(ctx, m, i)),
 
-    isManaging && projectActions(ctx, p),
-    isManaging && newMilestoneForm(ctx, p, milestones),
+    // Everything that changes the project sits together here, in one place.
+    isManaging &&
+      h(
+        'div',
+        { class: 'manage' },
+        projectActions(ctx, p),
+        h('h3', {}, 'Manage milestones'),
+        milestones.length === 0 && h('p', { class: 'small muted' }, 'No milestones yet – add the first one below.'),
+        ...milestones.map((m, i) => milestoneActions(ctx, milestones, m, i)),
+        newMilestoneForm(ctx, p, milestones),
+      ),
     h('button', { class: 'link', onclick: toggleManage }, isManaging ? 'Done managing' : 'Manage'),
   );
 }
 
-function milestoneRow(ctx: AppContext, list: Milestone[], m: Milestone, index: number, isManaging: boolean): HTMLElement {
+function milestoneRow(ctx: AppContext, m: Milestone, index: number): HTMLElement {
   const logged = ctx.state.minutesByMilestone.get(m.milestone_id) ?? 0;
   const percent = milestonePercent(logged, m.planned_hours);
   const over = percent > 100;
@@ -202,7 +208,6 @@ function milestoneRow(ctx: AppContext, list: Milestone[], m: Milestone, index: n
       h('span', { class: over ? 'num over' : 'num' }, `${formatHours(logged)} / ${m.planned_hours} h · ${percent} %`),
     ),
     bar(percent, over ? 'over' : ''),
-    isManaging && milestoneActions(ctx, list, m, index),
   );
 }
 
@@ -227,7 +232,7 @@ function projectActions(ctx: AppContext, p: Project): HTMLElement {
   const toggleArchive = () => ctx.save(updateProject(device, p, 'status', p.status === 'active' ? 'archived' : 'active'));
   return h(
     'div',
-    { class: 'manage' },
+    {},
     h('h3', {}, 'Manage project'),
     h(
       'div',
@@ -266,12 +271,17 @@ function milestoneActions(ctx: AppContext, list: Milestone[], m: Milestone, inde
   const toggleDone = () => ctx.save(updateMilestone(device, m, 'status', m.status === 'done' ? 'open' : 'done'));
   return h(
     'div',
-    { class: 'actions' },
-    h('button', { onclick: () => move(-1), disabled: index === 0, title: 'Move up' }, '↑'),
-    h('button', { onclick: () => move(1), disabled: index === list.length - 1, title: 'Move down' }, '↓'),
-    h('button', { onclick: rename }, 'Rename'),
-    h('button', { onclick: changeHours }, 'Planned hours'),
-    h('button', { onclick: toggleDone }, m.status === 'done' ? 'Reopen' : 'Mark complete'),
+    { class: 'manage-milestone' },
+    h('div', { class: 'milestone-name' }, `${index + 1}. ${m.name}`, h('span', { class: 'muted num' }, ` · ${m.planned_hours} h planned`)),
+    h(
+      'div',
+      { class: 'actions' },
+      h('button', { onclick: () => move(-1), disabled: index === 0, title: 'Move up' }, '↑'),
+      h('button', { onclick: () => move(1), disabled: index === list.length - 1, title: 'Move down' }, '↓'),
+      h('button', { onclick: rename }, 'Rename'),
+      h('button', { onclick: changeHours }, 'Planned hours'),
+      h('button', { onclick: toggleDone }, m.status === 'done' ? 'Reopen' : 'Mark complete'),
+    ),
   );
 }
 

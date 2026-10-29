@@ -150,7 +150,8 @@ Dark theme only. All text must meet WCAG AA contrast on its background.
   animation, respects "reduce motion").
 - **Shield shape** for project cards / project icons.
 - **Ribbon banner** for page titles and for milestone names when complete.
-- Oak-leaf sprigs as corner ornaments on the dashboard only.
+- ~~Oak-leaf sprigs as corner ornaments on the dashboard only.~~ Tried in Phase 6 and removed
+  by the owner ("don't look good") – do not add oak-leaf ornaments.
 - Motto "SOLUS NON SOLUM" on the start/sign-in screen.
 - Very subtle woven-fabric texture on the background (CSS or a tiny tiled image, keep the app
   fast on mobile data).
