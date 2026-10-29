@@ -14,7 +14,7 @@ The full plan is in [SPEC.md](SPEC.md).
 
 New versions install themselves: the next time the app is opened with internet, it updates.
 
-## Current status: Phase 5 – timer
+## Current status: Phase 6 – progress dashboard
 
 - ✅ Projects and milestones (create, rename, archive, planned hours, mark done, reorder)
 - ✅ Logging time by hand (start & end time, or just a duration)
@@ -25,7 +25,9 @@ New versions install themselves: the next time the app is opened with internet, 
 - ✅ Microsoft sign-in, personal account, app folder only (Phase 3)
 - ✅ Sync to `OneDrive › Apps › Time Tracker › timetracker.xlsx` with fingerprint chain, backups and "Verify data" (Phase 4)
 - ✅ Timer: Begin / Rest on the Record tab, survives closing the app, asks after 8 hours (Phase 5)
-- ⏳ Not yet: dashboard and charts (6), polish (7)
+- ✅ Progress tab: this week, hours per week (last 12 weeks), time-based and milestone-based progress
+  per project; setting up projects and milestones is under "Manage" (Phase 6)
+- ⏳ Not yet: polish (7)
 
 **How your data is kept:** every entry is saved on the device first, then copied to the Excel
 file whenever the device is online and signed in. Phone and computer share the same data through
@@ -96,7 +98,9 @@ Every line should be green and end with "passed".
 | `src/events.ts` | Creates the records for each action |
 | `src/state.ts` | Calculates projects, milestones and totals from the records |
 | `src/validation.ts` | Checks what you type (end after start, nothing in the future, …) |
-| `src/ui/` | The four screens: Record, Projects, History, Account |
+| `src/ui/` | The four screens: Record, Progress, History, Account |
+| `src/progress.ts`, `src/ui/weeklyChart.ts` | Progress numbers and the weekly chart (project colours checked for colour-blindness) |
+| `src/timer.ts` | The timer |
 | `src/auth.ts`, `src/config.ts` | Microsoft sign-in |
 | `src/sync/` | Excel sync: rules (`engine.ts`), Excel file (`workbook.ts`), OneDrive (`onedrive.ts`), when to sync (`controller.ts`) |
 | `src/ui/ornaments.ts` | Star, flame, shield, divider and ribbon banner from the crest |

@@ -301,6 +301,38 @@ button.link {
 .milestone .actions button { padding: 5px 10px; min-height: 40px; font-size: 0.88rem; }
 .add-milestone { border-top: 1px solid var(--gold-soft); padding-top: 12px; margin-top: 2px; }
 
+/* ----- Progress (dashboard) ----- */
+.card.dash { position: relative; }
+.card.dash > h2:first-of-type, .card.dash > .project-title { padding: 0 20px; }
+.sprig { position: absolute; top: 4px; width: 30px; height: 30px; color: var(--oak-text); opacity: 0.55; pointer-events: none; }
+.sprig.left { left: 4px; }
+.sprig.right { right: 4px; transform: scaleX(-1); }
+.hero {
+  text-align: center;
+  font-size: 2.6rem;
+  line-height: 1.1;
+  color: var(--flame);
+  font-variant-numeric: lining-nums proportional-nums; /* large single numbers look best proportional */
+}
+.week-list, .legend { list-style: none; padding: 0; margin: 10px 0 0; }
+.week-list li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--gold-soft); }
+.week-list li span:nth-child(2) { flex: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0 8px; font-size: 0.92rem; }
+.legend li { display: flex; align-items: center; gap: 6px; }
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.chart-box { position: relative; height: 230px; } /* includes the axis labels */
+.table-view { margin-top: 10px; }
+.table-view summary { font-size: 0.9rem; }
+.table-scroll { overflow-x: auto; margin-top: 8px; }
+.table-scroll table { border-collapse: collapse; width: 100%; font-size: 0.92rem; font-variant-numeric: lining-nums tabular-nums; }
+.table-scroll th, .table-scroll td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--gold-soft); white-space: nowrap; }
+.table-scroll th { color: var(--gold); font-weight: 600; }
+.table-scroll th:first-child, .table-scroll td:first-child { text-align: left; }
+.stat { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.stat > span:first-child { color: var(--silver); }
+.bar .fill.gold { background: var(--gold); }
+.manage { border-top: 1px solid var(--gold-soft); margin-top: 12px; }
+
 /* ----- History ----- */
 .entry-head { display: flex; align-items: baseline; gap: 10px; font-size: 1.15rem; }
 .entry-head strong { color: var(--flame); }

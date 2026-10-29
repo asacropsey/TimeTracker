@@ -18,12 +18,12 @@ import { h, type AppContext } from './ui/dom';
 import { historyView } from './ui/historyView';
 import { logView } from './ui/logView';
 import { flame, seal, shield, star } from './ui/ornaments';
-import { projectsView } from './ui/projectsView';
+import { progressView } from './ui/progressView';
 
 type Tab = 'log' | 'projects' | 'history' | 'account';
 const TABS: { id: Tab; label: string; icon: () => Element; view: (ctx: AppContext) => HTMLElement }[] = [
   { id: 'log', label: 'Record', icon: () => flame(), view: logView },
-  { id: 'projects', label: 'Projects', icon: () => shield(), view: projectsView },
+  { id: 'projects', label: 'Progress', icon: () => shield(), view: progressView },
   { id: 'history', label: 'History', icon: () => star(), view: historyView },
   { id: 'account', label: 'Account', icon: () => seal(), view: accountView },
 ];

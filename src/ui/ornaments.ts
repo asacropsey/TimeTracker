@@ -56,6 +56,24 @@ export function seal(className = 'icon'): SVGSVGElement {
   );
 }
 
+/** An oak-leaf sprig with an acorn, for the corners of dashboard panels (dashboard only). */
+export function oakSprig(className = 'sprig'): SVGSVGElement {
+  const leaf = (x: number, y: number, angle: number) =>
+    `<path transform="translate(${x} ${y}) rotate(${angle})" fill="currentColor" ` +
+    `d="M0 0c2-1 2.5-3 4.5-3.2c-.4 1.2.6 1.6 1.8 1.4c-.5 1.3.3 2 1.6 2.1c-.8 1-.8 1.9.2 2.6` +
+    `c-1.4.6-2.9.3-4-.5c-.3 1.1-1.5 1.4-2.6.9C1 2.6.4 1.4 0 0z"/>`;
+  return svg(
+    '0 0 40 40',
+    className,
+    `<path d="M3 3c7 4 13 10 17 18" fill="none" stroke="currentColor" stroke-width="1.2"/>` +
+      leaf(8, 6, 20) +
+      leaf(13, 11, 70) +
+      leaf(16, 16, 15) +
+      `<ellipse cx="21" cy="23" rx="2.4" ry="3" fill="currentColor"/>` +
+      `<path d="M18.4 21.2h5.2" stroke="currentColor" stroke-width="1.6"/>`,
+  );
+}
+
 /** A gold line with a star in the middle, used to separate sections. */
 export function divider(): HTMLElement {
   return h('div', { class: 'divider', role: 'separator' }, star());
