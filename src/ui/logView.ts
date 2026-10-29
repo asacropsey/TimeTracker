@@ -3,7 +3,8 @@
 import { createTimeEntry } from '../events';
 import { elapsedMs, finishTimer, formatClock, isLongRunning, type RunningTimer } from '../timer';
 import { localDate, localDateTime, validateManualEntry } from '../validation';
-import { confirmWarnings, formatMinutes, formatWhen, h, messages, milestoneName, projectName, type AppContext } from './dom';
+import { askYesNo, confirmWarnings } from './dialog';
+import { formatMinutes, formatWhen, h, messages, milestoneName, projectName, type AppContext } from './dom';
 import { banner, divider, flame } from './ornaments';
 
 // Kept between screen refreshes.
@@ -106,10 +107,11 @@ function runningCard(ctx: AppContext, timer: RunningTimer): HTMLElement {
     const result = finishTimer(timer, end);
     if (result.errors.length) return feedback.replaceChildren(messages(result.errors));
     if (result.tooShort) {
-      if (confirm('Less than a minute – too short to record.\n\nStop the timer without saving?')) await ctx.setTimer(null);
+      const stopIt = await askYesNo('Less than a minute – too short to record.\n\nStop the timer without saving?', 'Stop without saving', 'Keep running');
+      if (stopIt) await ctx.setTimer(null);
       return;
     }
-    if (!confirmWarnings(result.warnings)) return;
+    if (!(await confirmWarnings(result.warnings))) return;
     choosingStopTime = false;
     const saved = await ctx.save(
       createTimeEntry(ctx.device, {
@@ -218,7 +220,7 @@ function manualCard(ctx: AppContext): HTMLElement {
       minutes: minutesInput.valueAsNumber,
     });
     if (check.errors.length) return feedback.replaceChildren(messages(check.errors));
-    if (!confirmWarnings(check.warnings)) return;
+    if (!(await confirmWarnings(check.warnings))) return;
 
     const project_id = picker.projectSelect.value;
     const milestone_id = picker.milestoneSelect.value;

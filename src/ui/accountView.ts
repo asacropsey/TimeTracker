@@ -2,8 +2,10 @@
 
 import { currentAccount, isSignInConfigured, signIn, signOut } from '../auth';
 import { startFresh } from '../db';
+import { plainError } from '../errors';
 import { enableSync, requestSync, statusText, sync, verifyNow } from '../sync/controller';
 import type { Problem } from '../sync/engine';
+import { askYesNo, tell } from './dialog';
 import { h, type AppContext } from './dom';
 import { banner, divider, shield } from './ornaments';
 
@@ -29,7 +31,7 @@ export function accountView(ctx: AppContext): HTMLElement {
 /** Not signed in: the crest, the motto and one button. */
 function signInScreen(): HTMLElement {
   const offline = !navigator.onLine;
-  const start = () => signIn().catch((err) => alert(`Sign-in could not start.\n\n${err.message ?? err}`));
+  const start = () => signIn().catch((err) => tell(plainError(err, 'starting the sign-in'), 'Sign-in could not start'));
   return h(
     'section',
     { class: 'welcome' },
@@ -49,7 +51,7 @@ function signInScreen(): HTMLElement {
 
 function identityCard(ctx: AppContext, name: string, email: string): HTMLElement {
   const leave = async () => {
-    if (!confirm('Sign out on this device?\n\nYour entries stay saved on this device.')) return;
+    if (!(await askYesNo('Sign out on this device?\n\nYour entries stay saved on this device.', 'Sign out'))) return;
     await signOut();
     ctx.rerender();
   };
@@ -76,9 +78,12 @@ function firstSyncChoice(ctx: AppContext): HTMLElement {
   const count = ctx.pendingCount;
   const keep = () => enableSync();
   const fresh = async () => {
-    const ok = confirm(
+    const ok = await askYesNo(
       `Erase all ${count} saved changes on this device (projects, milestones and entries)?\n\n` +
         'This cannot be undone. Use it only for test data. Afterwards this device starts syncing.',
+      'Erase test data',
+      'Cancel',
+      true,
     );
     if (!ok) return;
     await startFresh();
@@ -118,7 +123,7 @@ function syncCard(ctx: AppContext): HTMLElement {
             : `${result.problems.length} ${result.problems.length === 1 ? 'problem' : 'problems'} found:`,
       };
     } catch (err) {
-      verify = { running: false, problems: [], text: err instanceof Error ? err.message : String(err) };
+      verify = { running: false, problems: [], text: plainError(err, 'checking the Excel file') };
     }
     ctx.rerender();
   };

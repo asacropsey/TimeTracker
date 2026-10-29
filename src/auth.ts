@@ -4,6 +4,7 @@
 
 import { InteractionRequiredAuthError, PublicClientApplication, type AccountInfo } from '@azure/msal-browser';
 import { AUTHORITY, MICROSOFT_CLIENT_ID, SCOPES } from './config';
+import { PlainError } from './errors';
 
 let msal: PublicClientApplication | null = null;
 
@@ -38,7 +39,7 @@ export function currentAccount(): AccountInfo | null {
 
 /** Goes to Microsoft's sign-in page; comes back to the app afterwards. */
 export async function signIn(): Promise<void> {
-  if (!msal) throw new Error('Microsoft sign-in is not set up yet.');
+  if (!msal) throw new PlainError('Microsoft sign-in is not set up yet.');
   await msal.loginRedirect({ scopes: SCOPES, prompt: 'select_account' });
 }
 
@@ -50,7 +51,7 @@ export async function signOut(): Promise<void> {
 }
 
 /** Thrown when Microsoft wants you to sign in again (e.g. after some time). */
-export class SignInRequiredError extends Error {
+export class SignInRequiredError extends PlainError {
   constructor() {
     super('Please sign in again.');
   }

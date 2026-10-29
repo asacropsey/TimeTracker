@@ -90,10 +90,6 @@ export function messages(errors: string[], warnings: string[] = []): HTMLElement
   );
 }
 
-/** Asks the user to confirm warnings. Returns true if there are none or the user agrees. */
-export function confirmWarnings(warnings: string[]): boolean {
-  return warnings.length === 0 || confirm(`${warnings.join('\n')}\n\nSave anyway?`);
-}
 
 export function projectName(state: AppState, projectId: string): string {
   return state.projects.find((p) => p.project_id === projectId)?.name ?? '(unknown project)';

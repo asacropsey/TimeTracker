@@ -4,6 +4,7 @@
 
 import { currentAccount, SignInRequiredError } from '../auth';
 import { getPendingEvents, getSetting, importSyncedEvents, markSynced, setSetting } from '../db';
+import { plainError } from '../errors';
 import type { LastSeen, LocalStore, SyncResult } from './engine';
 
 export const sync = {
@@ -67,7 +68,7 @@ export async function requestSync(): Promise<void> {
   } catch (err) {
     sync.result = null;
     sync.signInNeeded = err instanceof SignInRequiredError;
-    sync.error = err instanceof Error ? err.message : String(err);
+    sync.error = plainError(err, 'syncing');
   } finally {
     sync.running = false;
   }

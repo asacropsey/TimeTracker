@@ -5,6 +5,7 @@ import { createMilestone, createProject, updateMilestone, updateProject } from '
 import { lastWeeks, milestonePercent, minutesPerWeek, OTHER_COLOR, projectColor, summarize, type ProjectSummary } from '../progress';
 import type { ChangeEvent, Milestone, Project } from '../types';
 import { formatHours, formatMinutes, h, messages, type AppContext } from './dom';
+import { askText, tell } from './dialog';
 import { banner, shield } from './ornaments';
 
 const CHART_WEEKS = 12;
@@ -213,20 +214,14 @@ function milestoneRow(ctx: AppContext, m: Milestone, index: number): HTMLElement
 
 // ----- Manage: everything that changes projects and milestones -----
 
-/** Asks for a new text value. Returns null if cancelled or unchanged. */
-function ask(question: string, current: string): string | null {
-  const answer = prompt(question, current);
-  return answer === null || answer.trim() === current ? null : answer.trim();
-}
-
 function projectActions(ctx: AppContext, p: Project): HTMLElement {
   const { device } = ctx;
-  const rename = () => {
-    const v = ask('New project name:', p.name);
+  const rename = async () => {
+    const v = await askText('New project name:', p.name);
     if (v) ctx.save(updateProject(device, p, 'name', v));
   };
-  const describe = () => {
-    const v = ask('Project description:', p.description);
+  const describe = async () => {
+    const v = await askText('Project description:', p.description);
     if (v !== null) ctx.save(updateProject(device, p, 'description', v));
   };
   const toggleArchive = () => ctx.save(updateProject(device, p, 'status', p.status === 'active' ? 'archived' : 'active'));
@@ -257,15 +252,15 @@ function milestoneActions(ctx: AppContext, list: Milestone[], m: Milestone, inde
     });
     ctx.save(events);
   };
-  const rename = () => {
-    const v = ask('New milestone name:', m.name);
+  const rename = async () => {
+    const v = await askText('New milestone name:', m.name);
     if (v) ctx.save(updateMilestone(device, m, 'name', v));
   };
-  const changeHours = () => {
-    const v = ask('Planned hours:', String(m.planned_hours));
+  const changeHours = async () => {
+    const v = await askText(`Planned hours for “${m.name}”:`, String(m.planned_hours), 'decimal');
     if (v === null) return;
-    const hours = Number(v.replace(',', '.'));
-    if (!Number.isFinite(hours) || hours < 0) return alert('Please enter a number of hours, e.g. 120.');
+    const hours = Number(v.replace(',', '.')); // accepts "12,5" as well as "12.5"
+    if (!Number.isFinite(hours) || hours < 0) return tell('Please enter a number of hours, for example 120 or 12,5.');
     ctx.save(updateMilestone(device, m, 'planned_hours', String(hours)));
   };
   const toggleDone = () => ctx.save(updateMilestone(device, m, 'status', m.status === 'done' ? 'open' : 'done'));

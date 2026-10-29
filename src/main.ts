@@ -8,6 +8,8 @@ import '@fontsource/eb-garamond/latin-400-italic.css';
 import '@fontsource/eb-garamond/latin-600.css';
 import './style.css';
 import { currentAccount, initAuth } from './auth';
+import { plainError } from './errors';
+import { tell } from './ui/dialog';
 import { enableSync, loadSyncSettings, onSyncChange, requestSync, statusText, sync } from './sync/controller';
 import { appendEvents, countPending, getAllEvents, getSetting, requestPersistentStorage, setSetting } from './db';
 import { buildState } from './state';
@@ -44,7 +46,7 @@ const ctx: AppContext = {
     try {
       await appendEvents(events);
     } catch (err) {
-      alert(`Sorry, this could not be saved on this device.\n\n${err}`);
+      await tell(plainError(err, 'saving on this device'), 'Not saved');
       saved = false;
     }
     await reload();
@@ -159,10 +161,12 @@ async function start() {
   setInterval(() => ctx.timer && updateLiveText(), 1000); // the timer's clock ticks every second
 
   // Then sign-in: finishes a sign-in if we just came back from Microsoft's page.
+  const backFromMicrosoft = /[#&?](code|error)=/.test(location.href);
   try {
     await initAuth();
   } catch (err) {
     console.warn('Microsoft sign-in could not start', err);
+    if (backFromMicrosoft) await tell(plainError(err, 'finishing the sign-in'), 'Sign-in did not complete');
   }
   // A device with nothing on it (e.g. a new phone) can start syncing right away.
   if (currentAccount() && !sync.enabled && ctx.pendingCount === 0) await enableSync();

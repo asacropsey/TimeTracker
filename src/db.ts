@@ -6,6 +6,7 @@
 // (erasing test data before the very first sync) – see there.
 
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { PlainError } from './errors';
 import type { AppEvent } from './types';
 
 interface TimeTrackerDB extends DBSchema {
@@ -80,7 +81,7 @@ export async function importSyncedEvents(events: AppEvent[]): Promise<void> {
  * so it can never touch anything that is (or will be) in the Excel file.
  */
 export async function startFresh(): Promise<void> {
-  if (await getSetting('syncEnabled')) throw new Error('Syncing is already switched on – nothing can be erased.');
+  if (await getSetting('syncEnabled')) throw new PlainError('Syncing is already switched on – nothing can be erased.');
   const tx = (await db()).transaction(['events', 'outbox', 'settings'], 'readwrite');
   await Promise.all([
     tx.objectStore('events').clear(),

@@ -3,17 +3,8 @@
 import { createCorrection } from '../events';
 import type { EntryView } from '../types';
 import { validateCorrection } from '../validation';
-import {
-  confirmWarnings,
-  formatDate,
-  formatMinutes,
-  formatWhen,
-  h,
-  messages,
-  milestoneName,
-  projectName,
-  type AppContext,
-} from './dom';
+import { confirmWarnings } from './dialog';
+import { formatDate, formatMinutes, formatWhen, h, messages, milestoneName, projectName, type AppContext } from './dom';
 import { banner } from './ornaments';
 
 // Kept between screen refreshes.
@@ -123,7 +114,7 @@ function correctionForm(ctx: AppContext, v: EntryView): HTMLElement {
     const corrected = Math.round((hours.valueAsNumber || 0) * 60 + (minutes.valueAsNumber || 0));
     const check = validateCorrection(current, corrected, reason.value);
     if (check.errors.length) return feedback.replaceChildren(messages(check.errors));
-    if (!confirmWarnings(check.warnings)) return;
+    if (!(await confirmWarnings(check.warnings))) return;
     correctingId = '';
     await ctx.save(createCorrection(ctx.device, v, corrected, reason.value));
   };

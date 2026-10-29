@@ -1,6 +1,7 @@
 // Talking to Microsoft Graph (the door to OneDrive).
 
 import { getAccessToken, SignInRequiredError } from './auth';
+import { PlainError } from './errors';
 
 export const GRAPH = 'https://graph.microsoft.com/v1.0';
 
@@ -16,7 +17,7 @@ export function describeGraphError(status: number): string {
   return `Unexpected answer from Microsoft (code ${status}).`;
 }
 
-export class GraphError extends Error {
+export class GraphError extends PlainError {
   /**
    * @param step   what the app was doing, e.g. "downloading the Excel file"
    * @param detail Microsoft's own short explanation, if it gave one
@@ -42,7 +43,7 @@ export class GraphError extends Error {
   }
 }
 
-export class OfflineError extends Error {
+export class OfflineError extends PlainError {
   constructor() {
     super('No connection to Microsoft right now.');
   }
