@@ -11,7 +11,7 @@ export default defineConfig(({ command, isPreview }) => ({
     // Makes the app installable on the phone and lets it work offline.
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon-180x180.png', 'pwa-48x48.png'],
+      includeAssets: ['icon-apple-180.png', 'icon-48.png'],
       workbox: {
         // Everything the app needs offline, including fonts and the crest images.
         globPatterns: ['**/*.{js,css,html,woff2,png,webp}'],
@@ -25,11 +25,12 @@ export default defineConfig(({ command, isPreview }) => ({
         display: 'standalone',
         start_url: '.',
         scope: '.',
+        // Gold Sigma on navy (design/app-icon.svg). New file names, so phones notice the new icon.
         icons: [
-          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
-          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon-64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

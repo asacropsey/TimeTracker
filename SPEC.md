@@ -155,7 +155,9 @@ Dark theme only. All text must meet WCAG AA contrast on its background.
 - Motto "SOLUS NON SOLUM" on the start/sign-in screen.
 - Very subtle woven-fabric texture on the background (CSS or a tiny tiled image, keep the app
   fast on mobile data).
-- App icon (home screen) and splash screen made from the crest (shield + flame, cropped square).
+- App icon (home screen): a stylised **gold Sigma (Σ) on dark navy** (`design/app-icon.svg`).
+  Changed by the owner after Phase 7: the cropped crest (shield + flame) was too small to read
+  at icon size. The full crest stays on the welcome and sign-in screens.
 
 ### Tone of text
 Short, calm, slightly formal labels ("Begin", "Rest", "Record time", "Milestones").

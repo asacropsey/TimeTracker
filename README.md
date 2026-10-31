@@ -26,7 +26,7 @@ computer. Everything ends up in one Excel file in your OneDrive.
 1. Open **Chrome** and go to https://asacropsey.github.io/TimeTracker/
 2. Wait about 5 seconds; the app saves itself for offline use.
 3. Tap **⋮** (top right) → **Add to home screen** → **Install**.
-4. Open **Time Tracker** from the home screen (the crest icon).
+4. Open **Time Tracker** from the home screen (the gold **Σ** icon).
 
 ### On the computer
 Open https://asacropsey.github.io/TimeTracker/ in Edge or Chrome. You can also install it there:
@@ -186,5 +186,5 @@ cd C:\Users\asacr\Projects\TimeTracker; npm test          # automated checks, al
 | `src/errors.ts` | Turns any error into a plain-language message |
 | `src/ui/` | The four screens, pop-up boxes (`dialog.ts`), ornaments from the crest |
 | `src/style.css` | Colours, fonts and look (palette from the crest) |
-| `design/`, `scripts/make-crest-assets.mjs` | Crest images; `npm run crest` remakes the icons |
+| `design/`, `scripts/make-crest-assets.mjs` | Crest images and the app icon (`app-icon.svg`, gold Σ); `npm run crest` remakes icons and crest images |
 | `tests/` | Automated checks |

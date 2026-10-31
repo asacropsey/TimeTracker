@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- App icon: a stylised gold Sigma on the crest's midnight navy (owner's choice, replaces the cropped crest). -->
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2cf7d"/>
+      <stop offset="0.55" stop-color="#d6a84f"/>
+      <stop offset="1" stop-color="#b8892d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#1b2b47"/>
+      <stop offset="1" stop-color="#0e1726"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <g id="sigma">
+    <path fill="url(#gold)" d="
+      M132 104 H380 L392 196 H368 L350 152 H216
+      L322 256
+      L204 364 H352 L368 320 H392 L382 408 H126 V394
+      L262 256
+      L132 118 Z"/>
+  </g>
+</svg>
